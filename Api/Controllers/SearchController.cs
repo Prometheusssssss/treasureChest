@@ -97,24 +97,36 @@ namespace TransactionAppletaApi
                     var jtoken = json.AsDynamic();
                     string groups = jtoken.groups;
                     string name = jtoken.name;
+                    string orderByField = jtoken.orderByField;
+                    string isDesc = jtoken.isDesc;
                     //执行sql
                     using (var x = Join.Dal.MySqlProvider.X())
                     {
                         string sql = "";
                         if (string.IsNullOrWhiteSpace(name))
                         {
-                            sql = string.Format(@"SELECT a.KID,a.GROUPS,a.NAME,b.CODE,B.IS_ENABLE,B.CLUE,B.`OPENING_CONDITIONS`,B.`COORDINATE`,B.`ENDING`,B.`FILLER`,B.`CONTRIBUTOR`,B.`IS_DELETE`
-                                        ,B.`CRT_TIME`,B.`FILLER_ID`,B.`CONTRIBUTOR_ID` AS IS_ENABLE FROM `b_adventure_strategy_category` AS a LEFT JOIN `b_adventure_strategy` AS b
+                            sql = string.Format(@"SELECT a.KID ,B.KID AS DETAIL_ID,a.GROUPS,a.NAME,b.CODE,B.IS_ENABLE,B.CLUE,B.`OPENING_CONDITIONS`,B.`COORDINATE`,B.`ENDING`,B.`FILLER`,B.`CONTRIBUTOR`,B.`IS_DELETE`
+                                        ,B.`CRT_TIME`,B.`FILLER_ID`,B.`CONTRIBUTOR_ID`,B.`COORDINATE_URL` FROM `b_adventure_strategy_category` AS a LEFT JOIN `b_adventure_strategy` AS b
                                         ON a.NAME=b.NAME AND b.is_enable=1 where a.groups='{0}'
                                         ", groups);
                         }
                         else
                         {
-                            sql = string.Format(@"SELECT a.KID,a.GROUPS,a.NAME,b.CODE,B.IS_ENABLE,B.CLUE,B.`OPENING_CONDITIONS`,B.`COORDINATE`,B.`ENDING`,B.`FILLER`,B.`CONTRIBUTOR`,B.`IS_DELETE`
-                                        ,B.`CRT_TIME`,B.`FILLER_ID`,B.`CONTRIBUTOR_ID` AS IS_ENABLE FROM `b_adventure_strategy_category` AS a LEFT JOIN `b_adventure_strategy` AS b
+                            sql = string.Format(@"SELECT a.KID,B.KID AS DETAIL_ID,a.GROUPS,a.NAME,b.CODE,B.IS_ENABLE,B.CLUE,B.`OPENING_CONDITIONS`,B.`COORDINATE`,B.`ENDING`,B.`FILLER`,B.`CONTRIBUTOR`,B.`IS_DELETE`
+                                        ,B.`CRT_TIME`,B.`FILLER_ID`,B.`CONTRIBUTOR_ID`,B.`COORDINATE_URL` FROM `b_adventure_strategy_category` AS a LEFT JOIN `b_adventure_strategy` AS b
                                         ON a.NAME=b.NAME AND b.is_enable=1 where a.groups='{0}' and a.name='{1}'
                                         ", groups, name);
                         }
+                        //排序
+                        if (orderByField != "" && orderByField != null)
+                        {
+                            if (isDesc == "1")
+                                sql = sql + " order by " + orderByField + " desc";
+                            else
+                                sql = sql + " order by " + orderByField;
+                        }
+                        WxPayData wx = new WxPayData();
+                        wx.WriteLogFile("执行postQiyuSearch SQL" + sql);
                         var dt = x.ExecuteSqlCommand(sql);
                         return new { Table = dt, IS_SUCCESS = true, MSG = "" };
                     }
@@ -125,6 +137,5 @@ namespace TransactionAppletaApi
                 }
             });
         }
-
     }
 }

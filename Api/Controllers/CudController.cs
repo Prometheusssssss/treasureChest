@@ -28,6 +28,7 @@ namespace TransactionAppletaApi
                     //执行sql
                     using (var x = Join.Dal.MySqlProvider.X())
                     {
+                        tablename = tablename.ToUpper();
                         var dicJson = json.ToJsonString();
                         var dict = dicJson.JsonToDictionary();
                         var kid = dict.GetValue("KID");
@@ -38,7 +39,7 @@ namespace TransactionAppletaApi
                             var ra = new Random();
                             var keys = "";
                             var values = "";
-                            if (tablename.ToUpper() != "B_ORDER_MSG_DETAILS" && tablename.ToUpper() != "B_MESSAGE")
+                            if (tablename != "B_ORDER_MSG_DETAILS" && tablename != "B_MESSAGE")
                             {
                                 keys = "`CODE`,`IS_DELETE`,`CRT_TIME`";
                                 values = "'" + DateTime.Now.ToString("yyyyMMddHHmmss") + ra.Next(1000, 9999) + "',0,'" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "'";
@@ -66,22 +67,27 @@ namespace TransactionAppletaApi
                             {
                                 if (item.Key != "KID")
                                 {
+                                    var updateValue = "";
+                                    if (item.Value != null)
+                                        updateValue = item.Value.ToString();
                                     if (updateSql != "")
-                                        updateSql = updateSql + "`" + item.Key + "`='" + item.Value.ToString() + "',";
+                                        updateSql = updateSql + "`" + item.Key + "`='" + updateValue + "',";
                                     else
-                                        updateSql = "`" + item.Key + "`='" + item.Value.ToString() + "',";
+                                        updateSql = "`" + item.Key + "`='" + updateValue + "',";
                                 }
                             }
                             updateSql = updateSql.Substring(0, updateSql.Length - 1);
-
                             sql = string.Format(@"update {0} set {1} where kid='{2}'", tablename, updateSql, kid);
                         }
+                        WxPayData wx = new WxPayData();
+                        wx.WriteLogFile("createAndUpdate的SQL" + sql);
                         var dt = x.ExecuteSqlCommand(sql);
                         ////执行扩展逻辑
                         //switch (tablename)
                         //{
-                        //    case "b_order":
-                        //        ExcuteInsertOrderEx(kid);
+                        //    case "B_ADVENTURE_STRATEGY":
+                        //        var name = dict.GetValue("NAME");
+                        //        ExcuteQiyu(kid, name);
                         //        break;
                         //    default:
                         //        break;
@@ -138,5 +144,221 @@ namespace TransactionAppletaApi
                 }
             });
         }
+
+        /// <summary>
+        /// 启用奇遇
+        /// http://localhost:64665/api/_cud/enableTable/tableName
+        /// </summary>
+        [HttpPost]
+        [Route("enableTable/{tableName}")]
+        public IHttpActionResult EnableTable(string tablename, [FromBody]JToken json)
+        {
+            return this.TryReturn<object>(() =>
+            {
+                try
+                {
+                    //执行sql
+                    using (var x = Join.Dal.MySqlProvider.X())
+                    {
+                        tablename = tablename.ToUpper();
+                        var dicJson = json.ToJsonString();
+                        var dict = dicJson.JsonToDictionary();
+                        var kid = dict.GetValue("KID");
+                        var sql = "";
+                        var updateSql = "";
+                        foreach (var item in dict)
+                        {
+                            if (item.Key != "KID")
+                            {
+                                var updateValue = "";
+                                if (item.Value != null)
+                                    updateValue = item.Value.ToString();
+                                if (updateSql != "")
+                                    updateSql = updateSql + "`" + item.Key + "`='" + updateValue + "',";
+                                else
+                                    updateSql = "`" + item.Key + "`='" + updateValue + "',";
+                            }
+                        }
+                        updateSql = updateSql.Substring(0, updateSql.Length - 1);
+                        sql = string.Format(@"update {0} set {1} where kid='{2}'", tablename, updateSql, kid);
+                        WxPayData wx = new WxPayData();
+                        wx.WriteLogFile("EnableTable的SQL  " + sql);
+                        var dt = x.ExecuteSqlCommand(sql);
+                        //执行扩展逻辑
+                        switch (tablename)
+                        {
+                            case "B_ADVENTURE_STRATEGY":
+                                var name = dict.GetValue("NAME");
+                                ExcuteQiyu(kid, name);
+                                break;
+                            default:
+                                break;
+                        }
+                        return new { Table = dt, IS_SUCCESS = true, MSG = "" };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return new { Table = "", IS_SUCCESS = false, MSG = ex.Message };
+                }
+            });
+        }
+
+        /// <summary>
+        /// 执行奇遇扩展逻辑
+        /// </summary>
+        /// <param name="kid"></param>
+        /// <param name="name"></param>
+        public void ExcuteQiyu(string kid, string name)
+        {
+            //修改其他同GROUPS的奇遇状态为禁用
+            //执行sql
+            using (var x = Join.Dal.MySqlProvider.X())
+            {
+                WxPayData wxp = new WxPayData();
+                var sql = "update B_ADVENTURE_STRATEGY set IS_ENABLE = 0 where NAME='" + name + "' and kid!='" + kid + "'";
+                wxp.WriteLogFile("ExcuteQiyu的SQL   " + sql);
+                x.ExecuteSqlCommand(sql);
+            }
+        }
+
+        /// <summary>
+        /// 创建伙伴亲密度明细
+        /// http://localhost:64665/api/_cud/createPartner
+        /// </summary>
+        [HttpPost]
+        [Route("createPartner")]
+        public IHttpActionResult CreatePartner([FromBody]JToken json)
+        {
+            return this.TryReturn<object>(() =>
+            {
+                try
+                {
+                    //执行sql
+                    using (var x = Join.Dal.MySqlProvider.X())
+                    {
+                        var result = json.AsDynamic();
+                        WxPayData wp = new WxPayData();
+                        var recommand = result.recommand;
+                        string delkids = result.delkids;
+                        string manKid = "";
+                        JArray details = result.details;
+                        //JArray list = json.AsDynamic();
+                        //删除
+                        if (!string.IsNullOrWhiteSpace(delkids))
+                        {
+                            wp.WriteLogFile("createPartner-要删除的KIDS:" + delkids);
+                            var delkidList = delkids.Split(',');
+                            foreach (var item in delkidList)
+                            {
+                                var delSql = "UPDATE b_partner_intimacy_detail SET IS_DELETE=1 WHERE KID='" + item + "'";
+                                x.ExecuteSqlCommand(delSql);
+                            }
+                        }
+                        foreach (var item in details)
+                        {
+                            var detail = item.AsDynamic();
+                            manKid = detail.PID;
+                            string pid = detail.PID;
+                            string kid = detail.KID;
+                            string propsId = detail.PROPS_ID;
+                            string propsName = detail.PROPS_NAME;
+                            string intimacy = detail.INTIMACY;
+                            var sql = "";
+                            if (kid == "-1")
+                            {
+                                sql = string.Format(@"INSERT INTO `b_partner_intimacy_detail` (`PID`, 
+                                                    `IS_ENABLE`,`PROPS_NAME`, `INTIMACY`, `IS_DELETE`,
+                                                    `CRT_TIME`)
+                                                    values('{0}','1','{1}','{2}','0','" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "')"
+                                                    , pid, propsName, intimacy);
+                            }
+                            else
+                            {
+                                sql = string.Format(@"UPDATE B_PARTNER_INTIMACY_DETAIL SET PROPS_NAME='{0}',INTIMACY='{1}' where kid='{2}'"
+                                                    , propsName, intimacy, kid);
+                            }
+                            wp.WriteLogFile("createPartner 的 执行sql :" + sql);
+                            x.ExecuteSqlCommand(sql);
+                        }
+                        //更新主表推荐字段
+                        var updateSql = "update B_PARTNER_INTIMACY set RECOMMEND='" + recommand + "' where kid='" + manKid + "'";
+                        x.ExecuteSqlCommand(updateSql);
+                        wp.WriteLogFile("createPartner-更新主表推荐使用字段sql:" + updateSql);
+                        return new { Table = "", IS_SUCCESS = true, MSG = "" };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return new { Table = "", IS_SUCCESS = false, MSG = ex.Message };
+                }
+            });
+        }
+
+        /// <summary>
+        /// 创建断案明细
+        /// http://localhost:64665/api/_cud/createDuanan
+        /// </summary>
+        [HttpPost]
+        [Route("createDuanan")]
+        public IHttpActionResult CreateDuanan([FromBody]JToken json)
+        {
+            return this.TryReturn<object>(() =>
+            {
+                try
+                {
+                    //执行sql
+                    using (var x = Join.Dal.MySqlProvider.X())
+                    {
+                        var result = json.AsDynamic();
+                        WxPayData wp = new WxPayData();
+                        string delkids = result.delkids;
+                        JArray details = result.details;
+                        //JArray list = json.AsDynamic();
+                        //删除
+                        if (!string.IsNullOrWhiteSpace(delkids))
+                        {
+                            wp.WriteLogFile("createDuanan-要删除的KIDS:" + delkids);
+                            var delkidList = delkids.Split(',');
+                            foreach (var item in delkidList)
+                            {
+                                var delSql = "UPDATE B_DUANAN SET IS_DELETE=1 WHERE KID='" + item + "'";
+                                x.ExecuteSqlCommand(delSql);
+                            }
+                        }
+                        foreach (var item in details)
+                        {
+                            var detail = item.AsDynamic();
+                            string pid = detail.PID;
+                            string kid = detail.KID;
+                            string name = detail.NAME;
+                            string content = detail.CONTENT;
+                            var sql = "";
+                            if (kid == "-1")
+                            {
+                                sql = string.Format(@"INSERT INTO `B_DUANAN` (`PID`, 
+                                                    `NAME`,`CONTENT`, `IS_DELETE`,
+                                                    `CRT_TIME`)
+                                                    values('{0}','{1}','{2}','0','" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "')"
+                                                    , pid, name, content);
+                            }
+                            else
+                            {
+                                sql = string.Format(@"UPDATE B_DUANAN SET CONTENT='{0}',NAME='{1}' where kid='{2}'"
+                                                    , content , name, kid);
+                            }
+                            wp.WriteLogFile("createDuanan 的 执行sql :" + sql);
+                            x.ExecuteSqlCommand(sql);
+                        }
+                        return new { Table = "", IS_SUCCESS = true, MSG = "" };
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return new { Table = "", IS_SUCCESS = false, MSG = ex.Message };
+                }
+            });
+        }
+
     }
 }

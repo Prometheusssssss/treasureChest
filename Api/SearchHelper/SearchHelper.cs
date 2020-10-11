@@ -30,6 +30,8 @@ namespace TransactionAppletaApi
                     var take = (page - 1) * limit;
                     sql += " limit " + take + "," + limit;
                 }
+                WxPayData wx = new WxPayData();
+                wx.WriteLogFile("执行通用查询sql：" + sql);
                 var dt = x.ExecuteSqlCommand(sql);
                 return dt;
             }

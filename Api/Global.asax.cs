@@ -13,7 +13,10 @@ namespace TransactionAppletaApi
         protected void Application_Start()
         {
             GlobalConfiguration.Configure(WebApiConfig.Register);
-            RedisTimerManager.Run();
+            //初始化数据
+            StarLuckData.X.Initial();
+            //初始化金色琅纹属性表
+            LangWenData.X.Initial();
         }
     }
 }

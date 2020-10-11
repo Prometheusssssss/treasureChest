@@ -1,0 +1,31 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Web;
+
+namespace TransactionAppletaApi
+{
+    public class LangWenData : BizServiceBase<LangWenData>
+    {
+        public DataTable goldLangwenModels { get; set; }
+        public DataTable goldLangwenAttrModels { get; set; }
+
+        #region L.加载方法
+        public void Initial()
+        {
+            using (var x = Join.Dal.MySqlProvider.X())
+            {
+                //金色琅纹
+                var selGoldSql = "select * from b_gold_langwen where is_delete=0";
+                var goldTable = x.ExecuteSqlCommand(selGoldSql);
+                this.goldLangwenModels = goldTable.Tables[0];
+                //金色琅纹属性
+                var selAttrSql = "select * from b_gold_langwen_attr where is_delete=0";
+                var tableAttr = x.ExecuteSqlCommand(selAttrSql);
+                this.goldLangwenAttrModels = tableAttr.Tables[0];
+            }
+        }
+        #endregion
+    }
+}

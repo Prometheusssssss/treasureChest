@@ -119,7 +119,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="BaseData\LangWenData.cs" />
+    <Compile Include="BaseData\StarLuckData.cs" />
     <Compile Include="Controllers\BaseController.cs" />
+    <Compile Include="Controllers\LangwenController.cs" />
+    <Compile Include="Controllers\StarLuckController.cs" />
     <Compile Include="Controllers\WXPController.cs" />
     <Compile Include="Controllers\PayController.cs" />
     <Compile Include="Controllers\OssController.cs" />
@@ -127,7 +131,6 @@
     <Compile Include="Controllers\LoginController.cs" />
     <Compile Include="Controllers\SearchController.cs" />
     <Compile Include="BizServiceBase.cs" />
-    <Compile Include="DataClass.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
