@@ -17,6 +17,8 @@ namespace TransactionAppletaApi
             StarLuckData.X.Initial();
             //初始化金色琅纹属性表
             LangWenData.X.Initial();
+            //初始化琅纹图片
+            LangWenImgUrlData.X.Initial();
         }
     }
 }

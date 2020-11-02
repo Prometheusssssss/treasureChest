@@ -119,6 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
+    <Compile Include="BaseData\LangWenImgUrlData.cs" />
     <Compile Include="BaseData\LangWenData.cs" />
     <Compile Include="BaseData\StarLuckData.cs" />
     <Compile Include="Controllers\BaseController.cs" />

@@ -10,6 +10,7 @@ namespace TransactionAppletaApi
     {
         public DataTable goldLangwenModels { get; set; }
         public DataTable goldLangwenAttrModels { get; set; }
+        public DataTable purpleLangwenModels { get; set; }
 
         #region L.加载方法
         public void Initial()
@@ -24,6 +25,10 @@ namespace TransactionAppletaApi
                 var selAttrSql = "select * from b_gold_langwen_attr where is_delete=0";
                 var tableAttr = x.ExecuteSqlCommand(selAttrSql);
                 this.goldLangwenAttrModels = tableAttr.Tables[0];
+                //紫色琅纹
+                var selPurpleSql = "select * from b_purple_langwen where is_delete=0";
+                var purpleTable = x.ExecuteSqlCommand(selPurpleSql);
+                this.purpleLangwenModels = purpleTable.Tables[0];
             }
         }
         #endregion

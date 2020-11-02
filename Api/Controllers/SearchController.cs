@@ -137,5 +137,109 @@ namespace TransactionAppletaApi
                 }
             });
         }
+
+        /// <summary>
+        /// 菜谱查询
+        /// http://localhost:64665/api/_search/postCaipuSearch
+        /// </summary>
+        [HttpPost]
+        [Route("postCaipuSearch")]
+        public IHttpActionResult postCaipuSearch([FromBody]JToken json)
+        {
+            return this.TryReturn<object>(() =>
+            {
+                try
+                {
+                    var jtoken = json.AsDynamic();
+                    string groups = jtoken.groups;
+                    string name = jtoken.name;
+                    string orderByField = jtoken.orderByField;
+                    string isDesc = jtoken.isDesc;
+                    if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(groups))
+                    {
+                        return new { Table = "", IS_SUCCESS = false, MSG = "错误的查询条件" };
+                    }
+                    else
+                    {
+                        //执行sql
+                        using (var x = Join.Dal.MySqlProvider.X())
+                        {
+                            string sql = string.Format(@"SELECT A.KID,B.KID AS DETAIL_ID,A.GROUPS,A.NAME,B.DETAIL_NAME,B.CONTENT,B.IS_DELETE,B.CRT_TIME FROM B_CAIPU_CATEGORY AS A 
+                                                        LEFT JOIN (SELECT * FROM B_CAIPU WHERE IS_ENABLE=1) AS B
+                                                        ON A.KID=B.PID where a.groups='{0}' and a.name='{1}'
+                                        ", groups, name);
+                            //排序
+                            if (orderByField != "" && orderByField != null)
+                            {
+                                if (isDesc == "1")
+                                    sql = sql + " order by " + orderByField + " desc";
+                                else
+                                    sql = sql + " order by " + orderByField;
+                            }
+                            WxPayData wx = new WxPayData();
+                            wx.WriteLogFile("postCaipuSearch SQL" + sql);
+                            var dt = x.ExecuteSqlCommand(sql);
+                            return new { Table = dt, IS_SUCCESS = true, MSG = "" };
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return new { Table = "", IS_SUCCESS = false, MSG = ex.Message };
+                }
+            });
+        }
+
+        /// <summary>
+        /// 食物鱼王查询
+        /// http://localhost:64665/api/_search/postFoodSearch
+        /// </summary>
+        [HttpPost]
+        [Route("postFoodSearch")]
+        public IHttpActionResult postFoodSearch([FromBody]JToken json)
+        {
+            return this.TryReturn<object>(() =>
+            {
+                try
+                {
+                    var jtoken = json.AsDynamic();
+                    string groups = jtoken.groups;
+                    string name = jtoken.name;
+                    string orderByField = jtoken.orderByField;
+                    string isDesc = jtoken.isDesc;
+                    if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(groups))
+                    {
+                        return new { Table = "", IS_SUCCESS = false, MSG = "错误的查询条件" };
+                    }
+                    else
+                    {
+                        //执行sql
+                        using (var x = Join.Dal.MySqlProvider.X())
+                        {
+                            string sql = string.Format(@"SELECT A.KID,B.KID AS DETAIL_ID,A.GROUPS,A.NAME,B.DETAIL_NAME,B.CONTENT,B.IS_DELETE,B.CRT_TIME FROM b_food_fish_category AS A 
+                                                        LEFT JOIN (SELECT * FROM b_food_fish WHERE IS_ENABLE=1) AS B
+                                                        ON A.KID=B.PID where a.groups='{0}' and a.name='{1}'
+                                        ", groups, name);
+                            //排序
+                            if (orderByField != "" && orderByField != null)
+                            {
+                                if (isDesc == "1")
+                                    sql = sql + " order by " + orderByField + " desc";
+                                else
+                                    sql = sql + " order by " + orderByField;
+                            }
+                            WxPayData wx = new WxPayData();
+                            wx.WriteLogFile("postCaipuSearch SQL" + sql);
+                            var dt = x.ExecuteSqlCommand(sql);
+                            return new { Table = dt, IS_SUCCESS = true, MSG = "" };
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return new { Table = "", IS_SUCCESS = false, MSG = ex.Message };
+                }
+            });
+        }
     }
 }
