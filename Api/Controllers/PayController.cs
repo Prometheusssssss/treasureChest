@@ -33,10 +33,10 @@ namespace TransactionAppletaApi
                     string price = arg.price;
                     //订单号
                     string orderNo = arg.orderNo;
-                    //产品ID
-                    string productId = arg.productId;
                     //买家ID
                     string buyUserId = arg.buyUserId;
+                    //购买次数
+                    string buyNum = arg.buyNum;
                     //JsCode
                     string jsCode = arg.jsCode;
                     //获取OpenId
@@ -47,47 +47,26 @@ namespace TransactionAppletaApi
                         wxp.WriteLogFile(msg);
                         return new { Table = new { MSG = "", IsSuccess = false, ErroMessage = msg } };
                     }
-                    #region 锁定产品状态
-                    //执行sql
-                    using (var x = Join.Dal.MySqlProvider.X())
+                    //执行调用付款
+                    //构造附加数据
+                    string attach = buyNum + "|" + buyUserId;
+                    var url = GlobalVariableWeChatApplets.UNIFIEDORDER_URL;
+                    var data = WxPayData.ForApplets(double.Parse(price), openId, orderNo, ip, attach);
+                    var xml = data.ToXml();
+                    var response = HttpService.Post(xml, url, 6);
+                    var preOrder = WxPayData.FromXml(response, "HMAC-SHA256");
+                    var errCode = preOrder.GetValue("err_code");
+                    if (errCode != null)
                     {
-                        //获取产品ID 查询产品是否在上架时间并且状态为上架中
-                        var nowDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                        var selectProductSql = "select * from B_PRODUCT_LIST where status='上架中' and kid='" + productId + "' and OFF_SHELF_TIME > '" + nowDate + "'";
-                        var selectProductTables = x.ExecuteSqlCommand(selectProductSql);
-                        if (selectProductTables.Tables[0].Rows.Count > 0)
-                        {
-                            //执行调用付款
-                            //构造附加数据
-                            string attach = productId + "|" + buyUserId;
-                            var url = GlobalVariableWeChatApplets.UNIFIEDORDER_URL;
-                            var data = WxPayData.ForApplets(double.Parse(price), openId, orderNo, ip, attach);
-                            var xml = data.ToXml();
-                            var response = HttpService.Post(xml, url, 6);
-                            var preOrder = WxPayData.FromXml(response, "HMAC-SHA256");
-                            var errCode = preOrder.GetValue("err_code");
-                            if (errCode != null)
-                            {
-                                var errMsg = preOrder.GetValue("err_code_des");
-                                return new { Table = new { MSG = "", IsSuccess = false, ErroMessage = errMsg } };
-                            }
-                            else
-                            {
-                                //如果调起支付成功，锁定产品状态为已锁定
-                                var updateProductSql = "update b_product_list set status='已锁定',LOCK_TIME='" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "' where kid = '" + productId + "'";
-                                x.ExecuteSqlCommand(updateProductSql);
-
-                                var payData = WxPayData.ForWechatPay(preOrder);
-                                var orderString = payData.ToJson();
-                                return new { Table = new { MSG = orderString, IsSuccess = true, ErroMessage = string.Empty } };
-                            }
-                        }
-                        else
-                        {
-                            return new { Table = new { MSG = "", IsSuccess = false, ErroMessage = "产品已下架。" } };
-                        }
+                        var errMsg = preOrder.GetValue("err_code_des");
+                        return new { Table = new { MSG = "", IsSuccess = false, ErroMessage = errMsg } };
                     }
-                    #endregion
+                    else
+                    {
+                        var payData = WxPayData.ForWechatPay(preOrder);
+                        var orderString = payData.ToJson();
+                        return new { Table = new { MSG = orderString, IsSuccess = true, ErroMessage = string.Empty } };
+                    }
                 }
                 catch (Exception ex)
                 {

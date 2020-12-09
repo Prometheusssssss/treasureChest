@@ -19,6 +19,8 @@ namespace TransactionAppletaApi
             LangWenData.X.Initial();
             //初始化琅纹图片
             LangWenImgUrlData.X.Initial();
+            //初始化共鸣
+            GongMingData.X.Initial();
         }
     }
 }

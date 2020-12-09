@@ -12,6 +12,8 @@ namespace TransactionAppletaApi
         public DataTable goldLangwenAttrModels { get; set; }
         public DataTable purpleLangwenModels { get; set; }
 
+
+
         #region L.加载方法
         public void Initial()
         {

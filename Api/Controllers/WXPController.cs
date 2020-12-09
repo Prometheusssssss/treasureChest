@@ -29,14 +29,13 @@ namespace TransactionAppletaApi
             var bizObj = JsonConvert.DeserializeObject<WxPayData.NOTIFY>(bizJson);
             var orderNo = bizObj.SALES_NO;
             var tranId = bizObj.TRANSACTION_ID;
-            //var tranId = bizObj.TRANSACTION_ID;
             var arrachArray = bizObj.ARRACH.Split('|');
-            var productId = arrachArray[0];
+            var buyNum = arrachArray[0];
             var buyUserId = arrachArray[1];
             var response = new HttpResponseMessage();
 
             Cache c = HttpRuntime.Cache;
-            var isExit = c.Get(productId);
+            var isExit = c.Get(bizObj.ARRACH);
             if (isExit != null)
             {
                 this.WriteLogFile("已收到回调");
@@ -47,10 +46,10 @@ namespace TransactionAppletaApi
             else
             {
                 //插入缓存，标识已收到微信回调
-                c.Insert(productId, bizObj.ARRACH);
-                //执行生成订单逻辑
-                var isCreate = CreateOrder(productId, buyUserId, orderNo, tranId);
-                if (isCreate)
+                c.Insert(bizObj.ARRACH, buyUserId);
+                //执行写入用户表次数的逻辑
+                var isTrue = updateBuyNum(buyUserId, buyNum);
+                if (isTrue)
                 {
                     WriteLogFile("TenpayOK!");
                     response.Content = new StringContent(WxPayData.NotifySuccess());
@@ -59,7 +58,7 @@ namespace TransactionAppletaApi
                 }
                 else
                 {
-                    WriteLogFile("TenpaySysEx:" + "单据生成错误");
+                    WriteLogFile("TenpaySysEx:" + "用户信息更新错误");
                     response.Content = new StringContent(WxPayData.NotifyFail());
                     response.Content.Headers.ContentType
                       = new System.Net.Http.Headers.MediaTypeHeaderValue("text/xml");
@@ -186,116 +185,35 @@ namespace TransactionAppletaApi
         }
         #endregion
 
-        #region 生成订单
+        #region 修改用户计算次数
         /// <summary>
-        /// 生成订单
+        /// 修改用户计算次数
         /// </summary>
-        public bool CreateOrder(string productId, string buyUserId, string code, string tranId)
+        public bool updateBuyNum(string buyUserId, string buyNum)
         {
             try
             {
                 //执行sql
                 using (var x = Join.Dal.MySqlProvider.X())
                 {
-                    //查询购买人信息
-                    var selectUserSql = "select * from A_USER where kid='" + buyUserId + "'";
-                    var selectUserTables = x.ExecuteSqlCommand(selectUserSql);
-                    var userRows = selectUserTables.Tables[0].Rows;
-                    //查询产品信息
-                    var selectProductSql = "select * from B_PRODUCT_LIST where kid='" + productId + "'";
-                    var selectProductTables = x.ExecuteSqlCommand(selectProductSql);
-                    var productRows = selectProductTables.Tables[0].Rows;
-                    if (productRows.Count > 0 && userRows.Count > 0)
+                    var selNumSql = "select * from a_user where kid='" + buyUserId + "'";
+                    var table = x.ExecuteSqlCommand(selNumSql).Tables[0];
+                    if (table.Rows.Count > 0)
                     {
-                        var product = productRows[0];
-                        var productName = product["NAME"];
-                        var user = userRows[0];
-                        var keys = @"`CODE`,
-                                    `IS_DELETE`,
-                                    `CRT_TIME`,
-                                    `STATUS`,
-                                    `TYPE`,
-                                    `GAME_PARTITION_KID`,
-                                    `GAME_PARTITION_NAME`,
-                                    `GAME_SECONDARY_KID`,
-                                    `GAME_SECONDARY_NAME`,
-                                    `GAME_ZONE_KID`,
-                                    `GAME_ZONE_NAME`,
-                                    `BUY_USER_ID`,
-                                    `BUY_USER_NAME`,
-                                    `BUY_USER_PHONE`,
-                                    `SELL_USER_ID`,
-                                    `SELL_USER_NAME`,
-                                    `SELL_USER_PHONE`,
-                                    `PRODUCT_NAME`,
-                                    `PRODUCT_ID`,
-                                    `PRICE`,
-                                    `PHOTO_URL`,
-                                    `DESC_PHOTO`,
-                                    `NEED_LEVEL`,
-                                    `DESCRIPTION`,
-                                    `ORDER_TIME`,
-                                    `PAY_STATUS`,
-                                    `TRAN_ID`";
-                        var values = string.Format(@"'{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}','{13}','{14}','{15}','{16}','{17}','{18}','{19}','{20}','{21}','{22}','{23}','{24}','{25}','{26}'",
-                                            code, "0", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), "待发货", "商品",
-                                            product["GAME_PARTITION_KID"], product["GAME_PARTITION_NAME"], product["GAME_SECONDARY_KID"]
-                                            , product["GAME_SECONDARY_NAME"], product["GAME_ZONE_KID"], product["GAME_ZONE_NAME"]
-                                            , user["KID"], user["NAME"], user["PHONE"], product["SELL_USER_ID"], product["SELL_USER_NAME"]
-                                            , product["SELL_USER_PHONE"], product["NAME"], product["KID"], product["PRICE"], product["PHOTO_URL"]
-                                            , product["DESC_PHOTO"], product["NEED_LEVEL"], product["DESCRIPTION"], DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), "已支付", tranId);
-                        var sql = string.Format(@"insert into {0} ({1}) values ({2})", "b_order", keys, values);
-                        x.ExecuteSqlCommand(sql);
-                        //查询订单
-                        var selectOrderSql = string.Format(@"select * from b_order where code='{0}'", code);
-                        var dataTable = x.ExecuteSqlCommand(selectOrderSql);
-                        if (dataTable.Tables[0].Rows.Count > 0)
-                        {
-                            var row = dataTable.Tables[0].Rows[0];
-                            //卖家ID
-                            string sellUserId = row["SELL_USER_ID"].ToString();
-                            //卖家昵称
-                            string sellUserName = row["SELL_USER_NAME"].ToString();
-                            //卖家手机号
-                            string sellUserPhone = row["SELL_USER_PHONE"].ToString();
-                            //插入流水计算金额字段*0.9
-                            var orderAmount = decimal.Parse(row["PRICE"].ToString());
-                            //金额
-                            var price = Math.Round(orderAmount * 0.9m, 2);
-                            //单据ID
-                            string orderId = row["KID"].ToString();
-
-                            //下架产品
-                            var updateProductSql = string.Format(@"update B_PRODUCT_LIST set status='已卖出' where kid='{0}'", productId);
-                            x.ExecuteSqlCommand(updateProductSql);
-                            //插入账户流水收入类型
-                            var insertAccountRecordSql = string.Format(@"insert into B_ACCOUNT_RECORD (`CODE`,`USER_ID`,`USER_NAME`,`USER_PHONE`,
-                                            `TYPE`,`RECEIVE_TYPE`,`SELETTMENT_STATUS`,`SELETTMENT_TIME`,`SELETTMENT_AMOUNT`,
-                                            `ORDER_AMOUNT`,`ORDER_ID`,`ORDER_CODE`,`IS_DELETE`,`CRT_TIME`) values ('{0}','{1}','{2}','{3}','{4}'
-                                            ,'{5}','{6}','{7}','{8}','{9}','{10}','{11}',0,'{12}')", DateTime.Now.ToString("yyyyMMddHHmmss"),
-                                               sellUserId, sellUserName, sellUserPhone, "收入", "商品", "待结算", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                                               price, orderAmount, orderId, code, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
-                            x.ExecuteSqlCommand(insertAccountRecordSql);
-                            //修改卖家即将收入增加
-                            var upIncome = decimal.Parse(user["UPCOMING_INCOME"].ToString());
-                            var amount = price;
-                            //修改用户表金额
-                            var resultAmount = upIncome + amount;
-                            var updateUserSql = "update a_user set UPCOMING_INCOME='" + resultAmount + "' where kid='" + sellUserId + "'";
-                            x.ExecuteSqlCommand(updateUserSql);
-                            //执行插入消息
-                            InsertMsg("发货提醒", "您的宝贝:[" + productName + "]已被拍下,请注意及时发货", sellUserId, sellUserName, sellUserPhone);
-                            return true;
-                        }
+                        var row = table.Rows[0];
+                        var sumNum = decimal.Parse(row["COUNT_NUMBER"].ToString());
+                        var updateSql = "";
+                        if (buyNum == "999")
+                            updateSql = "update a_user set IS_PERMANENT=1 where kid='" + buyUserId + "'";
                         else
                         {
-                            return false;
+                            sumNum += int.Parse(buyNum.ToString());
+                            updateSql = "update a_user set COUNT_NUMBER=" + sumNum + " where kid='" + buyUserId + "'";
                         }
+                        this.WriteLogFile("支付回调执行修改用户次数sql：" + updateSql);
+                        x.ExecuteSqlCommand(updateSql);
                     }
-                    else
-                    {
-                        return false;
-                    }
+                    return true;
                 }
             }
             catch (Exception ex)

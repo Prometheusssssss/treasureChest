@@ -125,8 +125,6 @@ namespace TransactionAppletaApi
                             else
                                 sql = sql + " order by " + orderByField;
                         }
-                        WxPayData wx = new WxPayData();
-                        wx.WriteLogFile("执行postQiyuSearch SQL" + sql);
                         var dt = x.ExecuteSqlCommand(sql);
                         return new { Table = dt, IS_SUCCESS = true, MSG = "" };
                     }
@@ -164,7 +162,7 @@ namespace TransactionAppletaApi
                         //执行sql
                         using (var x = Join.Dal.MySqlProvider.X())
                         {
-                            string sql = string.Format(@"SELECT A.KID,B.KID AS DETAIL_ID,A.GROUPS,A.NAME,B.DETAIL_NAME,B.CONTENT,B.IS_DELETE,B.CRT_TIME FROM B_CAIPU_CATEGORY AS A 
+                            string sql = string.Format(@"SELECT A.KID,B.KID AS DETAIL_ID,A.GROUPS,A.NAME,B.DETAIL_NAME,B.CONTENT,B.IS_DELETE,B.CRT_TIME,B.`FILLER`,B.`CONTRIBUTOR` FROM B_CAIPU_CATEGORY AS A 
                                                         LEFT JOIN (SELECT * FROM B_CAIPU WHERE IS_ENABLE=1) AS B
                                                         ON A.KID=B.PID where a.groups='{0}' and a.name='{1}'
                                         ", groups, name);
@@ -176,8 +174,6 @@ namespace TransactionAppletaApi
                                 else
                                     sql = sql + " order by " + orderByField;
                             }
-                            WxPayData wx = new WxPayData();
-                            wx.WriteLogFile("postCaipuSearch SQL" + sql);
                             var dt = x.ExecuteSqlCommand(sql);
                             return new { Table = dt, IS_SUCCESS = true, MSG = "" };
                         }
@@ -216,7 +212,7 @@ namespace TransactionAppletaApi
                         //执行sql
                         using (var x = Join.Dal.MySqlProvider.X())
                         {
-                            string sql = string.Format(@"SELECT A.KID,B.KID AS DETAIL_ID,A.GROUPS,A.NAME,B.DETAIL_NAME,B.CONTENT,B.IS_DELETE,B.CRT_TIME FROM b_food_fish_category AS A 
+                            string sql = string.Format(@"SELECT A.KID,B.KID AS DETAIL_ID,A.GROUPS,A.NAME,B.DETAIL_NAME,B.CONTENT,B.IS_DELETE,B.CRT_TIME,B.`FILLER`,B.`CONTRIBUTOR` FROM b_food_fish_category AS A 
                                                         LEFT JOIN (SELECT * FROM b_food_fish WHERE IS_ENABLE=1) AS B
                                                         ON A.KID=B.PID where a.groups='{0}' and a.name='{1}'
                                         ", groups, name);
@@ -228,8 +224,6 @@ namespace TransactionAppletaApi
                                 else
                                     sql = sql + " order by " + orderByField;
                             }
-                            WxPayData wx = new WxPayData();
-                            wx.WriteLogFile("postCaipuSearch SQL" + sql);
                             var dt = x.ExecuteSqlCommand(sql);
                             return new { Table = dt, IS_SUCCESS = true, MSG = "" };
                         }

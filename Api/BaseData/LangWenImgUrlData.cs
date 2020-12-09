@@ -20,11 +20,11 @@ namespace TransactionAppletaApi
         public void Initial()
         {
             var list = new List<LangwenImgUrlNameModel>();
-        list.Add(new LangwenImgUrlNameModel()
+            list.Add(new LangwenImgUrlNameModel()
             {
                 NAME = "【天】云",
                 URL = "https://oss.dazuiba.cloud:8003//api/oss/20201024-A9C4DE6A-BF80-41AB-B8BB-9C986C512182/image"
-        });
+            });
             list.Add(new LangwenImgUrlNameModel()
             {
                 NAME = "【天】虹",
@@ -93,7 +93,8 @@ namespace TransactionAppletaApi
             list.Add(new LangwenImgUrlNameModel()
             {
                 NAME = "【地】厚土",
-                URL = "https://oss.dazuiba.cloud:8003//api/oss/20201024-A9C4DE6A-BF80-41AB-B8BB-9C986C512117/image"
+                //URL = "https://oss.dazuiba.cloud:8003//api/oss/20201024-A9C4DE6A-BF80-41AB-B8BB-9C986C512117/image"
+                URL = "https://oss.dazuiba.cloud:8003//api/oss/20201209-c021afb2-cccb-46dc-8aac-8651ed7f2d16/image"
             });
             list.Add(new LangwenImgUrlNameModel()
             {
@@ -138,7 +139,8 @@ namespace TransactionAppletaApi
             list.Add(new LangwenImgUrlNameModel()
             {
                 NAME = "【天】皇天",
-                URL = "https://oss.dazuiba.cloud:8003//api/oss/20201024-A9C4DE6A-BF80-41AB-B8BB-9C986C512127/image"
+                //URL = "https://oss.dazuiba.cloud:8003//api/oss/20201024-A9C4DE6A-BF80-41AB-B8BB-9C986C512127/image"
+                URL = "https://oss.dazuiba.cloud:8003//api/oss/20201209-1921a908-a03b-4ca4-a05d-8cb8f203b785/image"
             });
             list.Add(new LangwenImgUrlNameModel()
             {

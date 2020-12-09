@@ -13,6 +13,7 @@ namespace TransactionAppletaApi
     //[Security.AuthorizationRequired]
     public class CudController : BaseController
     {
+        #region 插入/更新
         /// <summary>
         /// 插入/更新
         /// http://localhost:64665/api/_cud/createAndUpdate/tableName
@@ -101,7 +102,9 @@ namespace TransactionAppletaApi
                 }
             });
         }
+        #endregion
 
+        #region 删除
         /// <summary>
         /// 删除
         /// http://localhost:64665/api/_cud/del/tableName
@@ -144,9 +147,11 @@ namespace TransactionAppletaApi
                 }
             });
         }
+        #endregion
 
+        #region 启用
         /// <summary>
-        /// 启用奇遇
+        /// 启用
         /// http://localhost:64665/api/_cud/enableTable/tableName
         /// </summary>
         [HttpPost]
@@ -191,6 +196,14 @@ namespace TransactionAppletaApi
                                 var name = dict.GetValue("NAME");
                                 ExcuteQiyu(kid, name);
                                 break;
+                            case "B_CAIPU":
+                                var pid = dict.GetValue("PID");
+                                ExcuteCaipu(kid, pid);
+                                break;
+                            case "B_FOOD_FISH":
+                                var pid1 = dict.GetValue("PID");
+                                ExcuteFishFood(kid, pid1);
+                                break;
                             default:
                                 break;
                         }
@@ -204,6 +217,7 @@ namespace TransactionAppletaApi
             });
         }
 
+        #region 执行奇遇扩展逻辑
         /// <summary>
         /// 执行奇遇扩展逻辑
         /// </summary>
@@ -221,7 +235,47 @@ namespace TransactionAppletaApi
                 x.ExecuteSqlCommand(sql);
             }
         }
+        #endregion
 
+        #region 执行菜谱扩展逻辑
+        /// <summary>
+        /// 执行菜谱扩展逻辑
+        /// </summary>
+        public void ExcuteCaipu(string kid, string pid)
+        {
+            //修改其他同GROUPS的菜谱状态为禁用
+            //执行sql
+            using (var x = Join.Dal.MySqlProvider.X())
+            {
+                WxPayData wxp = new WxPayData();
+                var sql = "update B_CAIPU set IS_ENABLE = 0 where PID='" + pid + "' and kid!='" + kid + "'";
+                wxp.WriteLogFile("ExcuteCaipu的SQL   " + sql);
+                x.ExecuteSqlCommand(sql);
+            }
+        }
+        #endregion
+
+        #region 执行食材/鱼王扩展逻辑
+        /// <summary>
+        /// 执行食材/鱼王扩展逻辑
+        /// </summary>
+        public void ExcuteFishFood(string kid, string pid)
+        {
+            //修改其他同GROUPS的食材/鱼王状态为禁用
+            //执行sql
+            using (var x = Join.Dal.MySqlProvider.X())
+            {
+                WxPayData wxp = new WxPayData();
+                var sql = "update B_FOOD_FISH set IS_ENABLE = 0 where PID='" + pid + "' and kid!='" + kid + "'";
+                wxp.WriteLogFile("ExcuteFishFood的SQL   " + sql);
+                x.ExecuteSqlCommand(sql);
+            }
+        }
+        #endregion
+
+        #endregion
+
+        #region 创建伙伴亲密度明细
         /// <summary>
         /// 创建伙伴亲密度明细
         /// http://localhost:64665/api/_cud/createPartner
@@ -294,7 +348,9 @@ namespace TransactionAppletaApi
                 }
             });
         }
+        #endregion
 
+        #region 创建断案明细
         /// <summary>
         /// 创建断案明细
         /// http://localhost:64665/api/_cud/createDuanan
@@ -345,7 +401,7 @@ namespace TransactionAppletaApi
                             else
                             {
                                 sql = string.Format(@"UPDATE B_DUANAN SET CONTENT='{0}',NAME='{1}' where kid='{2}'"
-                                                    , content , name, kid);
+                                                    , content, name, kid);
                             }
                             wp.WriteLogFile("createDuanan 的 执行sql :" + sql);
                             x.ExecuteSqlCommand(sql);
@@ -359,6 +415,7 @@ namespace TransactionAppletaApi
                 }
             });
         }
+        #endregion
 
     }
 }

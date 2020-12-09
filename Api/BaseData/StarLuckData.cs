@@ -53,7 +53,7 @@ namespace TransactionAppletaApi
                      new Detail()
                     {
                          NAME="旺相",
-                         X_BEGAN=76m,
+                         X_BEGAN=0.76m,
                          X_END=0.85m,
                          Y_BEGAN=0.5m,
                          Y_END=0.76m
