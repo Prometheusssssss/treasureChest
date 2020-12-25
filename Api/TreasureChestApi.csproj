@@ -120,11 +120,13 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="BaseData\GongMingData.cs" />
+    <Compile Include="BaseData\PrederingData.cs" />
     <Compile Include="BaseData\LangWenImgUrlData.cs" />
     <Compile Include="BaseData\LangWenData.cs" />
     <Compile Include="BaseData\StarLuckData.cs" />
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\LangwenController.cs" />
+    <Compile Include="Controllers\PonderingController.cs" />
     <Compile Include="Controllers\StarLuckController.cs" />
     <Compile Include="Controllers\WXPController.cs" />
     <Compile Include="Controllers\PayController.cs" />

@@ -102,21 +102,23 @@ namespace TransactionAppletaApi
                     //执行sql
                     using (var x = Join.Dal.MySqlProvider.X())
                     {
-                        string sql = "";
-                        if (string.IsNullOrWhiteSpace(name))
+                        var wsql = "";
+                        if (!string.IsNullOrWhiteSpace(name))
+                            wsql = "a.name ='" + name + "'";
+                        if (!string.IsNullOrWhiteSpace(groups))
                         {
-                            sql = string.Format(@"SELECT a.KID ,B.KID AS DETAIL_ID,a.GROUPS,a.NAME,b.CODE,B.IS_ENABLE,B.CLUE,B.`OPENING_CONDITIONS`,B.`COORDINATE`,B.`ENDING`,B.`FILLER`,B.`CONTRIBUTOR`,B.`IS_DELETE`
-                                        ,B.`CRT_TIME`,B.`FILLER_ID`,B.`CONTRIBUTOR_ID`,B.`COORDINATE_URL` FROM `b_adventure_strategy_category` AS a LEFT JOIN `b_adventure_strategy` AS b
-                                        ON a.NAME=b.NAME AND b.is_enable=1 where a.groups='{0}'
-                                        ", groups);
+                            if (wsql != "")
+                                wsql += " and ";
+                            wsql += "a.groups ='" + groups + "'";
                         }
-                        else
+                        if (wsql == "")
                         {
-                            sql = string.Format(@"SELECT a.KID,B.KID AS DETAIL_ID,a.GROUPS,a.NAME,b.CODE,B.IS_ENABLE,B.CLUE,B.`OPENING_CONDITIONS`,B.`COORDINATE`,B.`ENDING`,B.`FILLER`,B.`CONTRIBUTOR`,B.`IS_DELETE`
-                                        ,B.`CRT_TIME`,B.`FILLER_ID`,B.`CONTRIBUTOR_ID`,B.`COORDINATE_URL` FROM `b_adventure_strategy_category` AS a LEFT JOIN `b_adventure_strategy` AS b
-                                        ON a.NAME=b.NAME AND b.is_enable=1 where a.groups='{0}' and a.name='{1}'
-                                        ", groups, name);
+                            wsql = "1=1";
                         }
+
+                        string sql = string.Format(@"SELECT a.KID ,B.KID AS DETAIL_ID,a.GROUPS,a.NAME,b.CODE,B.IS_ENABLE,B.CLUE,B.`OPENING_CONDITIONS`,B.`COORDINATE`,B.`ENDING`,B.`FILLER`,B.`CONTRIBUTOR`,B.`IS_DELETE`
+                                        ,B.`CRT_TIME`,B.`FILLER_ID`,B.`CONTRIBUTOR_ID`,B.`COORDINATE_URL` FROM `b_adventure_strategy_category` AS a LEFT JOIN `b_adventure_strategy` AS b
+                                        ON a.NAME=b.NAME AND b.is_enable=1 where {0}", wsql);
                         //排序
                         if (orderByField != "" && orderByField != null)
                         {
@@ -153,31 +155,39 @@ namespace TransactionAppletaApi
                     string name = jtoken.name;
                     string orderByField = jtoken.orderByField;
                     string isDesc = jtoken.isDesc;
-                    if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(groups))
+
+                    //执行sql
+                    using (var x = Join.Dal.MySqlProvider.X())
                     {
-                        return new { Table = "", IS_SUCCESS = false, MSG = "错误的查询条件" };
-                    }
-                    else
-                    {
-                        //执行sql
-                        using (var x = Join.Dal.MySqlProvider.X())
+
+                        var wsql = "";
+                        if (!string.IsNullOrWhiteSpace(name))
+                            wsql = "name ='" + name + "'";
+                        if (!string.IsNullOrWhiteSpace(groups))
                         {
-                            string sql = string.Format(@"SELECT A.KID,B.KID AS DETAIL_ID,A.GROUPS,A.NAME,B.DETAIL_NAME,B.CONTENT,B.IS_DELETE,B.CRT_TIME,B.`FILLER`,B.`CONTRIBUTOR` FROM B_CAIPU_CATEGORY AS A 
-                                                        LEFT JOIN (SELECT * FROM B_CAIPU WHERE IS_ENABLE=1) AS B
-                                                        ON A.KID=B.PID where a.groups='{0}' and a.name='{1}'
-                                        ", groups, name);
-                            //排序
-                            if (orderByField != "" && orderByField != null)
-                            {
-                                if (isDesc == "1")
-                                    sql = sql + " order by " + orderByField + " desc";
-                                else
-                                    sql = sql + " order by " + orderByField;
-                            }
-                            var dt = x.ExecuteSqlCommand(sql);
-                            return new { Table = dt, IS_SUCCESS = true, MSG = "" };
+                            if (wsql != "")
+                                wsql += " and ";
+                            wsql += "groups ='" + groups + "'";
                         }
+                        if (wsql == "")
+                        {
+                            wsql = "1=1";
+                        }
+                        string sql = string.Format(@"SELECT A.KID,B.KID AS DETAIL_ID,A.GROUPS,A.NAME,B.DETAIL_NAME,B.CONTENT,B.IS_DELETE,B.CRT_TIME,B.`FILLER`,B.`CONTRIBUTOR` FROM B_CAIPU_CATEGORY AS A 
+                                                        LEFT JOIN (SELECT * FROM B_CAIPU WHERE IS_ENABLE=1) AS B
+                                                        ON A.KID=B.PID where {0}", wsql);
+                        //排序
+                        if (orderByField != "" && orderByField != null)
+                        {
+                            if (isDesc == "1")
+                                sql = sql + " order by " + orderByField + " desc";
+                            else
+                                sql = sql + " order by " + orderByField;
+                        }
+                        var dt = x.ExecuteSqlCommand(sql);
+                        return new { Table = dt, IS_SUCCESS = true, MSG = "" };
                     }
+
                 }
                 catch (Exception ex)
                 {
@@ -203,31 +213,96 @@ namespace TransactionAppletaApi
                     string name = jtoken.name;
                     string orderByField = jtoken.orderByField;
                     string isDesc = jtoken.isDesc;
-                    if (string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(groups))
+                    //执行sql
+                    using (var x = Join.Dal.MySqlProvider.X())
                     {
-                        return new { Table = "", IS_SUCCESS = false, MSG = "错误的查询条件" };
-                    }
-                    else
-                    {
-                        //执行sql
-                        using (var x = Join.Dal.MySqlProvider.X())
+                        var wsql = "";
+                        if (!string.IsNullOrWhiteSpace(name))
+                            wsql = "name ='" + name + "'";
+                        if (!string.IsNullOrWhiteSpace(groups))
                         {
-                            string sql = string.Format(@"SELECT A.KID,B.KID AS DETAIL_ID,A.GROUPS,A.NAME,B.DETAIL_NAME,B.CONTENT,B.IS_DELETE,B.CRT_TIME,B.`FILLER`,B.`CONTRIBUTOR` FROM b_food_fish_category AS A 
-                                                        LEFT JOIN (SELECT * FROM b_food_fish WHERE IS_ENABLE=1) AS B
-                                                        ON A.KID=B.PID where a.groups='{0}' and a.name='{1}'
-                                        ", groups, name);
-                            //排序
-                            if (orderByField != "" && orderByField != null)
-                            {
-                                if (isDesc == "1")
-                                    sql = sql + " order by " + orderByField + " desc";
-                                else
-                                    sql = sql + " order by " + orderByField;
-                            }
-                            var dt = x.ExecuteSqlCommand(sql);
-                            return new { Table = dt, IS_SUCCESS = true, MSG = "" };
+                            if (wsql != "")
+                                wsql += " and ";
+                            wsql += "groups ='" + groups + "'";
                         }
+                        if (wsql == "")
+                        {
+                            wsql = "1=1";
+                        }
+                        string sql = string.Format(@"SELECT A.KID,B.KID AS DETAIL_ID,A.GROUPS,A.NAME,B.DETAIL_NAME,B.CONTENT,B.IS_DELETE,B.CRT_TIME,B.`FILLER`,B.`CONTRIBUTOR` FROM b_food_fish_category AS A 
+                                                        LEFT JOIN (SELECT * FROM b_food_fish WHERE IS_ENABLE=1) AS B
+                                                        ON A.KID=B.PID where  {0}", wsql);
+                        //排序
+                        if (orderByField != "" && orderByField != null)
+                        {
+                            if (isDesc == "1")
+                                sql = sql + " order by " + orderByField + " desc";
+                            else
+                                sql = sql + " order by " + orderByField;
+                        }
+                        var dt = x.ExecuteSqlCommand(sql);
+                        return new { Table = dt, IS_SUCCESS = true, MSG = "" };
                     }
+                }
+                catch (Exception ex)
+                {
+                    return new { Table = "", IS_SUCCESS = false, MSG = ex.Message };
+                }
+            });
+        }
+
+        /// <summary>
+        /// 古董查询
+        /// http://localhost:64665/api/_search/postGuDongSearch
+        /// </summary>
+        [HttpPost]
+        [Route("postGuDongSearch")]
+        public IHttpActionResult postGuDongSearch([FromBody]JToken json)
+        {
+            return this.TryReturn<object>(() =>
+            {
+                try
+                {
+                    var jtoken = json.AsDynamic();
+                    string groups = jtoken.groups;
+                    string name = jtoken.name;
+                    string orderByField = jtoken.orderByField;
+                    string isDesc = jtoken.isDesc;
+
+                    //执行sql
+                    using (var x = Join.Dal.MySqlProvider.X())
+                    {
+
+                        var wsql = "";
+                        if (!string.IsNullOrWhiteSpace(name))
+                            wsql = "name like '%" + name + "%'";
+                        if (!string.IsNullOrWhiteSpace(groups))
+                        {
+                            if (wsql != "")
+                                wsql += " and ";
+                            wsql += "groups ='" + groups + "'";
+                        }
+                        if (wsql == "")
+                        {
+                            wsql = "1=1";
+                        }
+                        string sql = string.Format(@"SELECT * FROM B_ANTIQUE where {0}", wsql);
+                        //排序
+                        if (orderByField != "" && orderByField != null)
+                        {
+                            if (isDesc == "1")
+                                sql = sql + " order by " + orderByField + " desc";
+                            else
+                                sql = sql + " order by " + orderByField;
+                        }
+                        else
+                        {
+                            sql = sql + " order by seq_no";
+                        }
+                        var dt = x.ExecuteSqlCommand(sql);
+                        return new { Table = dt, IS_SUCCESS = true, MSG = "" };
+                    }
+
                 }
                 catch (Exception ex)
                 {

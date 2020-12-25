@@ -40,7 +40,7 @@ namespace TransactionAppletaApi
                             var ra = new Random();
                             var keys = "";
                             var values = "";
-                            if (tablename != "B_ORDER_MSG_DETAILS" && tablename != "B_MESSAGE")
+                            if (tablename != "B_ORDER_MSG_DETAILS" && tablename != "B_MESSAGE" && tablename != "B_CHANGE_LIFE_DETAIL")
                             {
                                 keys = "`CODE`,`IS_DELETE`,`CRT_TIME`";
                                 values = "'" + DateTime.Now.ToString("yyyyMMddHHmmss") + ra.Next(1000, 9999) + "',0,'" + DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + "'";
