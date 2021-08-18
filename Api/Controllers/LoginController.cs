@@ -28,8 +28,11 @@ namespace TransactionAppletaApi
                     var jsn = json.AsDynamic();
                     string jsCode = jsn.jsCode;
                     //根据JsCode换取OpenId
+                    WxPayData wx = new WxPayData();
+                    wx.WriteLogFile("doAutoLogin 获取OPEN_ID前");
                     var jsCode2Session = WxPayData.GetOpenId(jsCode);
                     var openId = jsCode2Session.openid;
+                    wx.WriteLogFile("doAutoLogin 获取OPEN_ID后,OPEN_ID为" + openId);
                     if (openId == "")
                     {
                         return new { Table = "", IS_SUCCESS = false, MSG = "JsCode失效，未获取到OpenId" };
@@ -56,6 +59,8 @@ namespace TransactionAppletaApi
                 }
                 catch (Exception ex)
                 {
+                    WxPayData wx = new WxPayData();
+                    wx.WriteLogFile("catch errorMsg：" + ex.Message);
                     return new { Table = "", IS_SUCCESS = false, MSG = ex.Message };
                 }
             });
@@ -82,6 +87,7 @@ namespace TransactionAppletaApi
                     string encryptedData = jsn.encryptedData;
                     string iv = jsn.iv;
                     ////根据JsCode换取OpenId
+                    WxPayData wx = new WxPayData();
                     var jsCode2Session = WxPayData.GetOpenId(jsCode);
                     var openId = jsCode2Session.openid;
                     if (openId == "" || openId == null)
@@ -89,15 +95,16 @@ namespace TransactionAppletaApi
                         return new { Table = "", IS_SUCCESS = false, MSG = "JsCode失效，未获取到OpenId" };
                     }
                     else
-                    {
+                    { 
                         //解密手机号
-                        var wxModel = DescodeWxSHA1(encryptedData, jsCode2Session.session_key, iv);
-                        var tel = wxModel.PhoneNumber;
+                        //var wxModel = DescodeWxSHA1(encryptedData, jsCode2Session.session_key, iv);
+                        //var tel = wxModel.PhoneNumber;
 
                         using (var x = Join.Dal.MySqlProvider.X())
                         {
                             //根据OpenId去数据库查询登录信息
                             var searchSql = "select * from a_user where is_delete=0 and OPEN_ID='" + openId + "'";
+                            wx.WriteLogFile("doLogin Sql" + searchSql);
                             var dt = x.ExecuteSqlCommand(searchSql);
                             //如果未查询到数据，更新OPEN_ID
                             if (dt.Tables[0].Rows.Count == 0)
@@ -105,7 +112,7 @@ namespace TransactionAppletaApi
                                 var insertSql = string.Format(@"insert into a_user (`CODE`,`NAME`,`OPEN_ID`,`IMG_URL`,`REGIST_DATE`,`IS_DELETE`,`IS_SA`,`CRT_TIME`,`PHONE`,`COUNT_NUMBER`) 
                                                             values('{0}','{1}','{2}','{3}','{4}',0,0,'{5}','{6}',3)"
                                                             , DateTime.Now.ToString("yyyyMMddHHmmss"), name, openId,
-                                                             url, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), tel);
+                                                             url, DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"), "");
                                 //var insertSql = string.Format(@"insert into a_user (`CODE`,`NAME`,`OPEN_ID`,`IMG_URL`,`REGIST_DATE`,`IS_DELETE`,`IS_SA`,`CRT_TIME`) 
                                 //                            values('{0}','{1}','{2}','{3}','{4}',0,0,'{5}')"
                                 //                      , DateTime.Now.ToString("yyyyMMddHHmmss"), name, openId,
@@ -122,6 +129,8 @@ namespace TransactionAppletaApi
                 }
                 catch (Exception ex)
                 {
+                    WxPayData wx = new WxPayData();
+                    wx.WriteLogFile("catch errorMsg：" + ex.Message);
                     return new { Table = "", IS_SUCCESS = false, MSG = ex.Message };
                 }
             });

@@ -35,7 +35,7 @@ namespace TransactionAppletaApi
             var response = new HttpResponseMessage();
 
             Cache c = HttpRuntime.Cache;
-            var isExit = c.Get(bizObj.ARRACH);
+            var isExit = c.Get(bizObj.TRANSACTION_ID);
             if (isExit != null)
             {
                 this.WriteLogFile("已收到回调");
@@ -46,7 +46,7 @@ namespace TransactionAppletaApi
             else
             {
                 //插入缓存，标识已收到微信回调
-                c.Insert(bizObj.ARRACH, buyUserId);
+                c.Insert(bizObj.TRANSACTION_ID, buyUserId);
                 //执行写入用户表次数的逻辑
                 var isTrue = updateBuyNum(buyUserId, buyNum);
                 if (isTrue)

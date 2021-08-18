@@ -70,7 +70,15 @@ namespace TransactionAppletaApi
                                 //属性
                                 var attrStr = langwenData["attr"].ToString();
                                 //计算属性功力
-                                var backModel = GoldLangwenSum(attrStr, level);
+                                var backModel = new GoldModel();
+                                if (name.Contains("玄宙") || name.Contains("银河") || name.Contains("辉宸") || name.Contains("梅林") || name.Contains("菊台") || name.Contains("神人") || name.Contains("道心"))
+                                {
+                                    backModel = GoldLangwenSum2(attrStr, level);
+                                }
+                                else
+                                {
+                                    backModel = GoldLangwenSum(attrStr, level);
+                                }
                                 var returnTable = new { attrStr = backModel.str, skill = Math.Floor(backModel.skill), keyNumber = totalTreasure, totalNum = totalNum, totalKeyPrice = totalKeyPrice + totalPrice };
                                 return new { Table = returnTable, IS_SUCCESS = true, MSG = "" };
                             }
@@ -85,11 +93,64 @@ namespace TransactionAppletaApi
             });
         }
 
-
+        /// <summary>
+        ///星渊、穹宇、竹川
+        /// </summary>
+        /// <param name="attrStr"></param>
+        /// <param name="level"></param>
+        /// <returns></returns>
         public GoldModel GoldLangwenSum(string attrStr, string level)
         {
             var model = new GoldModel();
             var goldLangwenAttrData = LangWenData.X.goldLangwenAttrModels;
+            var attrList = attrStr.Split(',');
+            //属性
+            var str = "";
+            //功力
+            var skill = 0.00m;
+            foreach (var item in attrList)
+            {
+                //根据属性+等级查询对应数值
+                var attrData = goldLangwenAttrData.Select().Where(p => p["name"].ToString() == item).SingleOrDefault();
+                if (attrData != null)
+                {
+                    var levelValue = decimal.Parse(attrData[level].ToString());
+                    var strLevelValue = "";
+                    //如果是会心增伤/会心减伤，暗伤增伤/暗伤减伤，×100拼接百分号
+                    if (item == "会心增伤" || item == "会心减伤" || item == "暗伤增伤" || item == "暗伤减伤")
+                    {
+                        strLevelValue = (levelValue * 100).ToString().TrimEnd('0') + "%";
+                        skill += CalculationSkill(item, levelValue) * 10;
+                    }
+                    //否则取整
+                    else
+                    {
+                        strLevelValue = Math.Floor(levelValue).ToString();
+                        skill += CalculationSkill(item, levelValue);
+
+                    }
+                    //计算功力
+                    //属性
+                    str += item + "+" + strLevelValue + ",";
+                }
+            }
+            str = str.Substring(0, str.Length - 1);
+            model.str = str;
+            model.skill = skill;
+            return model;
+        }
+
+        /// <summary>
+        /// 玄宙、银河、辉宸、梅林、菊台、神人、道心
+        /// </summary>
+        /// <param name="attrStr"></param>
+        /// <param name="level"></param>
+        /// <returns></returns>
+        public GoldModel GoldLangwenSum2(string attrStr, string level)
+        {
+            var model = new GoldModel();
+            var goldLangwenAttrData = LangWenData.X.goldLangwenAttr2Models;
+
             var attrList = attrStr.Split(',');
             //属性
             var str = "";
@@ -608,7 +669,16 @@ namespace TransactionAppletaApi
                                 //属性
                                 var attrStr = langwenData["attr"].ToString();
                                 //计算属性功力
-                                var backModel = GoldLangwenSum(attrStr, "LEVEL_" + buweiLangwen.level);
+                                var backModel = new GoldModel();
+                                if (buweiLangwen.name== "【天】玄宙" || buweiLangwen.name == "【天】银河" || buweiLangwen.name == "【天】辉宸" || buweiLangwen.name == "【地】梅林" ||
+                                buweiLangwen.name == "【地】菊台" || buweiLangwen.name == "【混】道心" || buweiLangwen.name == "【混】神人")
+                                {
+                                    backModel = GoldLangwenSum2(attrStr, "LEVEL_" + buweiLangwen.level);
+                                }
+                                else
+                                {
+                                    backModel = GoldLangwenSum(attrStr, "LEVEL_" + buweiLangwen.level);
+                                }
                                 //汇总功力
                                 skillSum += backModel.skill;
                                 //汇总属性值
@@ -707,7 +777,7 @@ namespace TransactionAppletaApi
                     var detailModel = new ReturDetialModel();
                     detailModel.buwei = item.buwei;
                     detailModel.attrStr = item.attrStr;
-                    detailModel.skill = Math.Floor(item.skill);
+                    detailModel.skill = Math.Ceiling(item.skill);
                     returnModel.detailList.Add(detailModel);
                 }
                 //汇总所有的属性值
@@ -778,7 +848,7 @@ namespace TransactionAppletaApi
                 returnModel.threeStr = threeStr;
                 returnModel.foreStr = foreStr;
                 returnModel.fiveStr = fiveStr;
-                returnModel.totalSkill = Math.Floor(totalGongli);
+                returnModel.totalSkill = Math.Ceiling(totalGongli);
 
                 var intKeys = 0;
                 var intPrice = 0;
@@ -804,8 +874,8 @@ namespace TransactionAppletaApi
                         }
                         //更新扣减次数
                         var updateSql = "update a_user set COUNT_NUMBER=" + sumNum + " where kid='" + userId + "'";
-                        this.WriteLogFile("用户：" + userId + " 琅纹计算消耗次数-1，剩余次数:" + sumNum);
                         x.ExecuteSqlCommand(updateSql);
+                        this.WriteLogFile("用户：" + userId + " 原计算次数：" + decimal.Parse(row["COUNT_NUMBER"].ToString()) + ",琅纹计算消耗次数-1，剩余次数:" + sumNum);
                     }
                 }
                 return new { Table = returnModel, IS_SUCCESS = true, MSG = "" };

@@ -52,9 +52,15 @@ namespace TransactionAppletaApi
                         if (jingongLevel == 2)
                             //所需2级精工=升级经验/15
                             backTotalJGNum += levelData.EXPERIENCE / 15;
-                        else
+                        else if (jingongLevel == 3)
                             //所需3级精工=升级经验/20
                             backTotalJGNum += levelData.EXPERIENCE / 20;
+                        else if (jingongLevel == 4)
+                            //所需4级精工=升级经验/25
+                            backTotalJGNum += levelData.EXPERIENCE / 25;
+                         else if (jingongLevel == 5)
+                            //所需5级精工=升级经验/30
+                            backTotalJGNum += levelData.EXPERIENCE / 30;
                         //backTotalYLNum += backJGNum * price;
                         //碎银消耗=数据库取值
                         backTotalSYNum += levelData.SILVER;
