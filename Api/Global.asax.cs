@@ -23,6 +23,8 @@ namespace TransactionAppletaApi
             GongMingData.X.Initial();
             //初始化琢磨
             PrederingData.X.Initial();
+            //初始化帮贡
+            BanggongData.X.Initial();
             //初始化心法
             XinFaData.X.Initial();
         }

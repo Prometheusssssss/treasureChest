@@ -164,8 +164,23 @@ namespace TransactionAppletaApi
             });
             list.Add(new LangwenImgUrlNameModel()
             {
+                NAME = "【混】太玄",
+                URL = "https://oss.dazuiba.cloud:8003//api/oss/20201024-A9C4DE6A-BF80-41AB-B8BB-9C986C512191/image"
+            });
+            list.Add(new LangwenImgUrlNameModel()
+            {
+                NAME = "【混】上玄",
+                URL = "https://oss.dazuiba.cloud:8003//api/oss/20201024-A9C4DE6A-BF80-41AB-B8BB-9C986C512190/image"
+            });
+            list.Add(new LangwenImgUrlNameModel()
+            {
+                NAME = "【混】玉玄",
+                URL = "https://oss.dazuiba.cloud:8003//api/oss/20201024-A9C4DE6A-BF80-41AB-B8BB-9C986C512192/image"
+            });
+            list.Add(new LangwenImgUrlNameModel()
+            {
                 NAME = "【天】银河",
-                URL = "https://oss.dazuiba.cloud:8003//api/oss/20201024-A9C4DE6A-BF80-41AB-B8BB-9C986C512133/image"
+                URL = "https://oss.dazuiba.cloud:8003//api/oss/20201024-A9C4DE6A-BF80-41AB-B8BB-9C986C512193/image"
             });
             this.langwenImgUrlNameModel = list;
         }

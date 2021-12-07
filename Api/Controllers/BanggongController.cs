@@ -15,11 +15,11 @@ namespace TransactionAppletaApi
     {
         #region 计算帮贡
         /// <summary>
-        /// 计算琢磨
+        /// 计算帮贡
         /// api/_pondering/sumPondering
         /// </summary>
         [HttpPost]
-        [Route("sumPondering")]
+        [Route("sumBanggong")]
         public IHttpActionResult ChangePhase([FromBody]JToken json)
         {
             return this.TryReturn<object>(() =>
@@ -27,7 +27,7 @@ namespace TransactionAppletaApi
                 try
                 {
                     var jtoken = json.AsDynamic();
-                    int name = jtoken.name;
+                    string name = jtoken.name;
                     int nowLevel = jtoken.nowLevel;
                     int preLevel = jtoken.preLevel;
                     //帮贡数据
@@ -41,7 +41,7 @@ namespace TransactionAppletaApi
                     for (int i = 1; i <= diffNum; i++)
                     {
                         var level = nowLevel + i;
-                        var levelData = banggongList.Where(p => p.LEVEL == level).FirstOrDefault();
+                        var levelData = banggongList.Where(p => p.LEVEL == level && p.NAME == name).FirstOrDefault();
                         //数据库取值
                         backTotalSYNum += levelData.SILVER;
                         backTotalBGNum += levelData.BANGGONG;

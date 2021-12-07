@@ -23,10 +23,10 @@ namespace TransactionAppletaApi
                     var model = new BanggongModel();
                     model.NAME = item["NAME"].ToString();
                     model.LEVEL = int.Parse(item["LEVEL"].ToString());
-                    model.BANGGONG = decimal.Parse(item["EXPERIENCE"].ToString());
-                    model.SILVER = decimal.Parse(item["EXPERIENCE"].ToString());
-                    model.TISHENG = int.Parse(item["SILVER"].ToString());
-                    model.GONGLI = int.Parse(item["SILVER"].ToString());
+                    model.BANGGONG = decimal.Parse(item["BANGGONG"].ToString());
+                    model.SILVER = decimal.Parse(item["SILVER"].ToString());
+                    model.TISHENG = decimal.Parse(item["TISHENG"].ToString());
+                    model.GONGLI = decimal.Parse(item["GONGLI"].ToString());
                     this.banggongDataList.Add(model);
                 }
             }

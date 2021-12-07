@@ -354,10 +354,25 @@ namespace TransactionAppletaApi
                     case "AS":
                         attrName = "暗伤";
                         break;
+                    case "HXJS":
+                        attrName = "会心减伤";
+                        break;
+                    case "ASJS":
+                        attrName = "暗伤减伤";
+                        break;
+                    case "HXZS":
+                        attrName = "会心增伤";
+                        break;
+                    case "ASZS":
+                        attrName = "暗伤增伤";
+                        break;
                     default:
                         break;
                 }
-                str += attrName + "+" + value + ",";
+                if (attrName == "会心减伤" || attrName == "暗伤减伤" || attrName == "会心增伤" || attrName == "暗伤增伤")
+                    str += attrName + "+" + (decimal.Parse(value) * 100).ToString().TrimEnd('0') + "%" + ",";
+                else
+                    str += attrName + "+" + value + ",";
             }
             str = str.Substring(0, str.Length - 1);
             backModel.str = str;
@@ -670,7 +685,7 @@ namespace TransactionAppletaApi
                                 var attrStr = langwenData["attr"].ToString();
                                 //计算属性功力
                                 var backModel = new GoldModel();
-                                if (buweiLangwen.name== "【天】玄宙" || buweiLangwen.name == "【天】银河" || buweiLangwen.name == "【天】辉宸" || buweiLangwen.name == "【地】梅林" ||
+                                if (buweiLangwen.name == "【天】玄宙" || buweiLangwen.name == "【天】银河" || buweiLangwen.name == "【天】辉宸" || buweiLangwen.name == "【地】梅林" ||
                                 buweiLangwen.name == "【地】菊台" || buweiLangwen.name == "【混】道心" || buweiLangwen.name == "【混】神人")
                                 {
                                     backModel = GoldLangwenSum2(attrStr, "LEVEL_" + buweiLangwen.level);
