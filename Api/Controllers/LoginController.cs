@@ -29,7 +29,7 @@ namespace TransactionAppletaApi
                     string jsCode = jsn.jsCode;
                     //根据JsCode换取OpenId
                     WxPayData wx = new WxPayData();
-                    wx.WriteLogFile("doAutoLogin 获取OPEN_ID前");
+                    wx.WriteLogFile("doAutoLogin 获取OPEN_ID前:" + jsCode);
                     var jsCode2Session = WxPayData.GetOpenId(jsCode);
                     var openId = jsCode2Session.openid;
                     wx.WriteLogFile("doAutoLogin 获取OPEN_ID后,OPEN_ID为" + openId);
@@ -95,7 +95,7 @@ namespace TransactionAppletaApi
                         return new { Table = "", IS_SUCCESS = false, MSG = "JsCode失效，未获取到OpenId" };
                     }
                     else
-                    { 
+                    {
                         //解密手机号
                         //var wxModel = DescodeWxSHA1(encryptedData, jsCode2Session.session_key, iv);
                         //var tel = wxModel.PhoneNumber;
